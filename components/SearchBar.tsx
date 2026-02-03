@@ -26,7 +26,7 @@ export default function SearchBar({
       <button
         onClick={onSettings}
         aria-label="Settings"
-        className="p-2 md:p-3 bg-white border border-gray-200  shadow-sm hover:shadow-md hover:bg-gray-50 transition text-gray-700 flex-shrink-0"
+        className="p-2 md:p-3 transition text-green-500 flex-shrink-0"
         title="Settings"
       >
         <PiGear size={18} className="md:hidden" />

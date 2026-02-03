@@ -158,11 +158,11 @@ export default function Catalog() {
 
           <button
             aria-label="Menu"
-            className="p-2 md:p-3 border border-gray-200 -full shadow-sm hover:shadow-md hover:bg-gray-50 transition text-gray-700 flex-shrink-0"
+            className="p-2 md:p-3 transition flex-shrink-0 text-green-500"
             onClick={() => setMenuOpen(true)}
             title="Browse all products"
           >
-            <PiList size={20} className="text-green-600"/>
+            <PiList size={20}/>
           </button>
         </div>
 
