@@ -96,7 +96,7 @@ export default function Summary({
                 {history.map((h) => (
                   <li key={h.when} className="flex items-start gap-3 justify-between border-b pb-3">
                     <div className="flex items-center gap-3 flex-1">
-                      <img src={h.img || "https://via.placeholder.com/64"} alt={h.name} className="w-12 h-12 object-cover bg-gray-100 flex-shrink-0 rounded" />
+                      <img src={h.img || "https://via.placeholder.com/64"} alt={h.name} className="w-12 h-12 object-cover bg-gray-100 flex-shrink-0 " />
                       <div className="flex-1">
                         <div className="font-medium text-black text-sm">{h.name}</div>
                         <div className="text-xs text-gray-600">{h.type ? `${h.type}` : ''}{h.quantity ? ` • Qty: ${h.quantity}` : ''}</div>

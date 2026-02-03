@@ -92,7 +92,7 @@ export default function MenuModal({
               <div className="flex items-center gap-2 mb-2 overflow-x-auto">
                 <button
                   onClick={() => { setSelectedCategory("All"); setCurrentPage(1); }}
-                  className={`px-3 py-1 text-sm font-medium transition-colors rounded ${selectedCategory === "All" ? "instanvi-chip-selected" : "bg-white text-gray-700 border border-gray-200"}`}
+                  className={`px-3 py-1 text-sm font-medium transition-colors  ${selectedCategory === "All" ? "instanvi-chip-selected" : "bg-white text-gray-700 border border-gray-200"}`}
                 >
                   All
                 </button>
@@ -100,7 +100,7 @@ export default function MenuModal({
                   <button
                     key={c}
                     onClick={() => { setSelectedCategory(c); setCurrentPage(1); }}
-                    className={`px-3 py-1 text-sm font-medium transition-colors rounded ${selectedCategory === c ? "instanvi-chip-selected" : "bg-white text-gray-700 border border-gray-200"}`}
+                    className={`px-3 py-1 text-sm font-medium transition-colors  ${selectedCategory === c ? "instanvi-chip-selected" : "bg-white text-gray-700 border border-gray-200"}`}
                   >
                     {c}
                   </button>
@@ -111,7 +111,7 @@ export default function MenuModal({
               {filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((product) => (
                 <div
                   key={product.id}
-                  className="bg-white border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-200 rounded"
+                  className="bg-white border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-200 "
                 >
                   <div className="relative bg-gray-100 overflow-hidden h-32 sm:h-36">
                     <img
@@ -148,9 +148,9 @@ export default function MenuModal({
                       <button
                         onClick={() => handleAddClick(product)}
                         aria-label={`Add ${product.name}`}
-                        className="ml-1 p-2 bg-green-500 hover:bg-green-600 text-white rounded-md flex items-center justify-center"
+                        className="ml-1 p-2 hover:bg-green-600 text-white -md flex items-center justify-center"
                       >
-                        <PiShoppingCart size={16} />
+                        <PiShoppingCart size={16} className="text-green-500" />
                       </button>
                     </div>
                   </div>
@@ -165,7 +165,7 @@ export default function MenuModal({
                 <button
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="flex items-center gap-1 px-2 py-1 bg-gray-100 border text-gray-700 rounded disabled:opacity-50"
+                  className="flex items-center gap-1 px-2 py-1 bg-gray-100 border text-gray-700  disabled:opacity-50"
                 >
                   <PiArrowLeftBold size={14} />
                 </button>
@@ -175,7 +175,7 @@ export default function MenuModal({
                 <button
                   onClick={() => setCurrentPage((p) => Math.min(Math.max(1, Math.ceil(products.length / pageSize)), p + 1))}
                   disabled={currentPage === Math.max(1, Math.ceil(products.length / pageSize))}
-                  className="flex items-center gap-1 px-2 py-1 bg-gray-100 border text-gray-700 rounded disabled:opacity-50"
+                  className="flex items-center gap-1 px-2 py-1 bg-gray-100 border text-gray-700  disabled:opacity-50"
                 >
                   <PiArrowRightBold size={14} />
                 </button>

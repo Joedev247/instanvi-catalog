@@ -158,16 +158,16 @@ export default function Catalog() {
 
           <button
             aria-label="Menu"
-            className="p-2 md:p-3 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:bg-gray-50 transition text-gray-700 flex-shrink-0"
+            className="p-2 md:p-3 border border-gray-200 -full shadow-sm hover:shadow-md hover:bg-gray-50 transition text-gray-700 flex-shrink-0"
             onClick={() => setMenuOpen(true)}
             title="Browse all products"
           >
-            <PiList  size={18} md={{ size: 20 } as any} className="text-green-600"/>
+            <PiList size={20} className="text-green-600"/>
           </button>
         </div>
 
         {/* Desktop Table View */}
-        <div className="hidden md:block bg-white shadow overflow-hidden rounded">
+        <div className="hidden md:block bg-white shadow overflow-hidden ">
           <table className="w-full table-fixed">
             <thead className="bg-white">
               <tr>
@@ -207,7 +207,7 @@ export default function Catalog() {
                   return (
                     <tr key={item.when} className="border-t border-gray-200 hover:bg-gray-50">
                       <td className="p-3 md:p-4">
-                        <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded overflow-hidden">
+                        <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100  overflow-hidden">
                           <img
                             src={item.img || "https://via.placeholder.com/200"}
                             alt={item.name}
@@ -223,7 +223,7 @@ export default function Catalog() {
                         <select
                           value={item.type || ""}
                           onChange={(e) => handleUpdateType(item.when, e.target.value)}
-                          className="border border-gray-300 px-2 py-1 rounded text-xs text-gray-700 bg-white w-full md:w-auto"
+                          className="border border-gray-300 px-2 py-1  text-xs text-gray-700 bg-white w-full md:w-auto"
                         >
                           <option value="">Select Type</option>
                           {product.types?.map((t) => (
@@ -237,16 +237,16 @@ export default function Catalog() {
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => handleUpdateQuantity(item.when, (item.quantity || 1) - 1)}
-                            className="px-1 md:px-2 py-1 bg-gray-200 text-black hover:bg-gray-300 rounded text-xs font-medium transition"
+                            className="px-1 md:px-2 py-1 bg-gray-200 text-black hover:bg-gray-300  text-xs font-medium transition"
                           >
                             −
                           </button>
-                          <span className="inline-flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-gray-100 rounded text-black font-medium text-xs">
+                          <span className="inline-flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-gray-100  text-black font-medium text-xs">
                             {item.quantity || 1}
                           </span>
                           <button
                             onClick={() => handleUpdateQuantity(item.when, (item.quantity || 1) + 1)}
-                            className="px-1 md:px-2 py-1 bg-gray-200 text-black hover:bg-gray-300 rounded text-xs font-medium transition"
+                            className="px-1 md:px-2 py-1 bg-gray-200 text-black hover:bg-gray-300  text-xs font-medium transition"
                           >
                             +
                           </button>
@@ -257,14 +257,14 @@ export default function Catalog() {
                           <button
                             title="View"
                             onClick={() => { setDetailsEntry(item); setDetailsOpen(true); }}
-                            className="p-1 md:p-2 text-blue-500 hover:bg-blue-50 rounded transition"
+                            className="p-1 md:p-2 text-blue-500 hover:bg-blue-50  transition"
                           >
                             <PiEye size={16} />
                           </button>
                           <button
                             onClick={() => handleDelete(item.when)}
                             title="Remove"
-                            className="p-1 md:p-2 text-red-500 hover:bg-red-50 rounded transition"
+                            className="p-1 md:p-2 text-red-500 hover:bg-red-50  transition"
                           >
                             <PiTrash size={16} />
                           </button>
@@ -294,7 +294,7 @@ export default function Catalog() {
             
             if (searchFiltered.length === 0) {
               return (
-                <div className="p-4 text-center text-gray-500 text-sm bg-white rounded">
+                <div className="p-4 text-center text-gray-500 text-sm bg-white ">
                   No products selected. Use the menu to add items.
                 </div>
               );
@@ -308,7 +308,7 @@ export default function Catalog() {
                   <div className="flex gap-3 items-start">
                     {/* Product Image */}
                     <div className="flex-shrink-0">
-                      <div className="w-14 h-14 bg-gray-100 rounded overflow-hidden">
+                      <div className="w-14 h-14 bg-gray-100  overflow-hidden">
                         <img
                           src={item.img || "https://via.placeholder.com/200"}
                           alt={item.name}
@@ -326,16 +326,16 @@ export default function Catalog() {
                       <div className="mt-2 flex items-center gap-2">
                         <button
                           onClick={() => handleUpdateQuantity(item.when, (item.quantity || 1) - 1)}
-                          className="px-2 py-1 bg-gray-200 text-black hover:bg-gray-300 rounded text-xs font-medium transition"
+                          className="px-2 py-1 bg-gray-200 text-black hover:bg-gray-300  text-xs font-medium transition"
                         >
                           −
                         </button>
-                        <span className="inline-flex items-center justify-center w-6 h-6 bg-gray-100 rounded text-black font-medium text-xs">
+                        <span className="inline-flex items-center justify-center w-6 h-6 bg-gray-100  text-black font-medium text-xs">
                           {item.quantity || 1}
                         </span>
                         <button
                           onClick={() => handleUpdateQuantity(item.when, (item.quantity || 1) + 1)}
-                          className="px-2 py-1 bg-gray-200 text-black hover:bg-gray-300 rounded text-xs font-medium transition"
+                          className="px-2 py-1 bg-gray-200 text-black hover:bg-gray-300  text-xs font-medium transition"
                         >
                           +
                         </button>
@@ -347,7 +347,7 @@ export default function Catalog() {
                       <select
                         value={item.type || ""}
                         onChange={(e) => handleUpdateType(item.when, e.target.value)}
-                        className="border border-gray-300 px-2 py-1 rounded text-xs text-gray-700 bg-white min-w-[80px]"
+                        className="border border-gray-300 px-2 py-1  text-xs text-gray-700 bg-white min-w-[80px]"
                       >
                         <option value="">Type</option>
                         {product.types?.map((t) => (
@@ -361,14 +361,14 @@ export default function Catalog() {
                         <button
                           title="View"
                           onClick={() => { setDetailsEntry(item); setDetailsOpen(true); }}
-                          className="p-2 text-blue-500 hover:bg-blue-50 rounded transition"
+                          className="p-2 text-blue-500 hover:bg-blue-50  transition"
                         >
                           <PiEye size={16} />
                         </button>
                         <button
                           onClick={() => handleDelete(item.when)}
                           title="Remove"
-                          className="p-2 text-red-500 hover:bg-red-50 rounded transition"
+                          className="p-2 text-red-500 hover:bg-red-50  transition"
                         >
                           <PiTrash size={16} />
                         </button>
