@@ -1,11 +1,10 @@
 "use client";
 import { useMemo, useState } from "react";
-import { PiList, PiTrash, PiEye } from "react-icons/pi";
+import { PiList, PiShoppingCart, PiTrash, PiArrowLeftBold, PiArrowRightBold } from "react-icons/pi";
 import SearchBar from "./SearchBar";
 import ProductRow from "../components/ProductRow";
 import Summary from "../components/Summary";
 import MenuModal from "../components/MenuModal";
-import ProductDetailsModal from "../components/ProductDetailsModal";
 
 type Product = {
   id: string;
@@ -66,10 +65,9 @@ export default function Catalog() {
   const [cartAmount, setCartAmount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [history, setHistory] = useState<Array<{id: string; name: string; price: number; img?: string; type?: string; quantity?: number; when: string; paid?: boolean}>>([]);
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const [detailsEntry, setDetailsEntry] = useState<{
-    id: string; name: string; price: number; img?: string; type?: string; quantity?: number; when: string; paid?: boolean
-  } | null>(null);
+  const [productTypes, setProductTypes] = useState<{ [key: string]: string }>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 12;
 
   const products = useMemo(() => {
     return SAMPLE.filter((p) =>
@@ -77,26 +75,41 @@ export default function Catalog() {
     );
   }, [query]);
 
+  const filteredByCategory = useMemo(() => {
+    if (tableCategory === "All") {
+      return products;
+    }
+    return products.filter((p) => p.category === tableCategory);
+  }, [products, tableCategory]);
+
   function handleAdd(product: Product, selectedType?: string, qty: number = 1) {
+    const type = selectedType || productTypes[product.id] || product.types?.[0] || "";
     const price = product.priceMin || 0;
     setCartCount((c) => c + 1);
-    setCartAmount((a) => a + price);
-    const entry = { id: product.id, name: product.name, price, img: product.img, type: selectedType, quantity: qty, when: new Date().toISOString(), paid: false };
+    setCartAmount((a) => a + price * qty);
+    const entry = { id: product.id, name: product.name, price, img: product.img, type, quantity: qty, when: new Date().toISOString(), paid: false };
     setHistory((h) => [entry, ...h]);
+  }
+
+  function getHistoryItem(productId: string) {
+    return history.find((h) => h.id === productId);
+  }
+
+  function handleUpdateQuantity(productId: string, newQuantity: number) {
+    if (newQuantity > 0) {
+      setHistory((h) => h.map((it) => (it.id === productId ? { ...it, quantity: newQuantity } : it)));
+    }
+  }
+
+  function handleDeleteFromCart(productId: string) {
+    const item = getHistoryItem(productId);
+    if (item) {
+      setHistory((h) => h.filter((it) => it.id !== productId));
+    }
   }
 
   function handleDelete(when: string) {
     setHistory((h) => h.filter((it) => it.when !== when));
-  }
-
-  function handleUpdateType(when: string, newType: string) {
-    setHistory((h) => h.map((it) => (it.when === when ? { ...it, type: newType } : it)));
-  }
-
-  function handleUpdateQuantity(when: string, newQuantity: number) {
-    if (newQuantity > 0) {
-      setHistory((h) => h.map((it) => (it.when === when ? { ...it, quantity: newQuantity } : it)));
-    }
   }
 
   function handleClear() {
@@ -105,24 +118,11 @@ export default function Catalog() {
 
   function handlePay(when: string) {
     return new Promise<void>((resolve) => {
-      // simulate payment processing delay
       setTimeout(() => {
         setHistory((h) => h.map((it) => (it.when === when ? { ...it, paid: true } : it)));
         resolve();
       }, 900);
     });
-  }
-
-  function handleInstantPay(productId: string, type?: string, quantity: number = 1) {
-    const product = SAMPLE.find((p) => p.id === productId);
-    if (!product) return Promise.resolve();
-    const price = (product.priceMin || 0) * quantity;
-    const when = new Date().toISOString();
-    setCartCount((c) => c + 1);
-    setCartAmount((a) => a + price);
-    const entry = { id: product.id, name: product.name, price, img: product.img, type, quantity, when, paid: true };
-    setHistory((h) => [entry, ...h]);
-    return Promise.resolve();
   }
 
   return (
@@ -144,16 +144,16 @@ export default function Catalog() {
         <div className="flex items-center justify-between gap-2 mb-6">
           <div className="flex gap-1 md:gap-2 flex-wrap overflow-x-auto flex-1">
             {["All", ...categoriesList].map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setTableCategory(c)}
-                  className={`px-2 md:px-3 py-1 text-xs md:text-sm font-medium transition-colors border whitespace-nowrap
-                    ${tableCategory === c ? "instanvi-chip-selected border-transparent" :
-                      "bg-white text-gray-700 border-gray-200"}`}
-                >
-                  {c}
-                </button>
-              ))}
+              <button
+                key={c}
+                onClick={() => { setTableCategory(c); setCurrentPage(1); }}
+                className={`px-2 md:px-3 py-1 text-xs md:text-sm font-medium transition-colors border whitespace-nowrap
+                  ${tableCategory === c ? "instanvi-chip-selected border-transparent" :
+                    "bg-white text-gray-700 border-gray-200"}`}
+              >
+                {c}
+              </button>
+            ))}
           </div>
 
           <button
@@ -167,151 +167,124 @@ export default function Catalog() {
         </div>
 
         {/* Desktop Table View */}
-        <div className="hidden md:block bg-white shadow overflow-hidden ">
+        <div className="hidden md:block bg-white shadow overflow-hidden rounded">
           <table className="w-full table-fixed">
             <thead className="bg-white">
               <tr>
                 <th className="p-3 md:p-4 text-left text-black font-semibold text-sm">Product</th>
                 <th className="p-3 md:p-4 text-left text-black font-semibold text-sm">Name / Price</th>
                 <th className="p-3 md:p-4 text-left text-black font-semibold text-sm">Type</th>
-                <th className="p-3 md:p-4 text-center text-black font-semibold text-sm">Quantity</th>
                 <th className="p-3 md:p-4 text-right text-black font-semibold text-sm">Action</th>
               </tr>
             </thead>
             <tbody>
-              {(() => {
-                const filtered = tableCategory === "All" 
-                  ? history 
-                  : history.filter((item) => {
-                      const product = SAMPLE.find((p) => p.id === item.id);
-                      return product?.category === tableCategory;
-                    });
-                
-                const searchFiltered = query
-                  ? filtered.filter((item) => item.name.toLowerCase().includes(query.toLowerCase()))
-                  : filtered;
-                
-                if (searchFiltered.length === 0) {
+              {filteredByCategory.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="p-6 text-center text-gray-500 text-sm">
+                    No products found.
+                  </td>
+                </tr>
+              ) : (
+                filteredByCategory.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((product) => {
+                  const cartItem = getHistoryItem(product.id);
+                  if (cartItem) {
+                    return (
+                      <tr key={product.id} className="border-t border-gray-200 hover:bg-gray-50">
+                        <td className="p-3 md:p-4">
+                          <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded overflow-hidden">
+                            <img
+                              src={product.img || "https://via.placeholder.com/200"}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </td>
+                        <td className="p-3 md:p-4">
+                          <div className="font-semibold text-black text-sm">{product.name}</div>
+                          <div className="text-xs text-gray-600">{product.priceMin} - {product.priceMax} XAF</div>
+                        </td>
+                        <td className="p-3 md:p-4">
+                          <select
+                            value={productTypes[product.id] || product.types?.[0] || ""}
+                            onChange={(e) => setProductTypes((prev) => ({ ...prev, [product.id]: e.target.value }))}
+                            className="border border-gray-300 px-2 py-1 rounded text-xs text-gray-700 bg-white w-full md:w-auto"
+                          >
+                            {product.types?.map((t) => (
+                              <option key={t} value={t}>
+                                {t}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="p-3 md:p-4 text-right">
+                          <div className="flex items-center gap-2 justify-end">
+                            <div className="flex items-center gap-2">
+                              <label htmlFor={`cart-qty-${product.id}`} className="text-sm text-gray-700 font-medium">Qty</label>
+                              <input
+                                id={`cart-qty-${product.id}`}
+                                type="number"
+                                min={1}
+                                value={cartItem.quantity || 1}
+                                onChange={(e) => handleUpdateQuantity(product.id, Math.max(1, parseInt(e.target.value) || 1))}
+                                className="w-14 h-5 text-center border border-gray-300 text-black font-medium px-2"
+                                aria-label={`Quantity for ${product.name}`}
+                                title="Quantity"
+                              />
+                            </div>
+                            <button
+                              onClick={() => handleDeleteFromCart(product.id)}
+                              title="Remove"
+                              className="p-2 text-red-500 hover:bg-red-50 rounded transition"
+                            >
+                              <PiTrash size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }
+
                   return (
-                    <tr>
-                      <td colSpan={5} className="p-6 text-center text-gray-500 text-sm">
-                        No products selected. Use the menu to add items.
-                      </td>
-                    </tr>
+                    <ProductRow
+                      key={product.id}
+                      product={product}
+                      onAdd={handleAdd}
+                    />
                   );
-                }
-                
-                return searchFiltered.map((item) => {
-                  const product = SAMPLE.find((p) => p.id === item.id);
-                  if (!product) return null;
-                  return (
-                    <tr key={item.when} className="border-t border-gray-200 hover:bg-gray-50">
-                      <td className="p-3 md:p-4">
-                        <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100  overflow-hidden">
-                          <img
-                            src={item.img || "https://via.placeholder.com/200"}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      </td>
-                      <td className="p-3 md:p-4">
-                        <div className="font-semibold text-black text-sm">{item.name}</div>
-                        <div className="text-xs text-gray-600">{item.price} XAF</div>
-                      </td>
-                      <td className="p-3 md:p-4">
-                        <select
-                          value={item.type || ""}
-                          onChange={(e) => handleUpdateType(item.when, e.target.value)}
-                          className="border border-gray-300 px-2 py-1  text-xs text-gray-700 bg-white w-full md:w-auto"
-                        >
-                          <option value="">Select Type</option>
-                          {product.types?.map((t) => (
-                            <option key={t} value={t}>
-                              {t}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="p-3 md:p-4">
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            onClick={() => handleUpdateQuantity(item.when, (item.quantity || 1) - 1)}
-                            className="px-1 md:px-2 py-1 bg-gray-200 text-black hover:bg-gray-300  text-xs font-medium transition"
-                          >
-                            −
-                          </button>
-                          <span className="inline-flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-gray-100  text-black font-medium text-xs">
-                            {item.quantity || 1}
-                          </span>
-                          <button
-                            onClick={() => handleUpdateQuantity(item.when, (item.quantity || 1) + 1)}
-                            className="px-1 md:px-2 py-1 bg-gray-200 text-black hover:bg-gray-300  text-xs font-medium transition"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </td>
-                      <td className="p-3 md:p-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            title="View"
-                            onClick={() => { setDetailsEntry(item); setDetailsOpen(true); }}
-                            className="p-1 md:p-2 text-blue-500 hover:bg-blue-50  transition"
-                          >
-                            <PiEye size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(item.when)}
-                            title="Remove"
-                            className="p-1 md:p-2 text-red-500 hover:bg-red-50  transition"
-                          >
-                            <PiTrash size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                });
-              })()}
+                })
+              )}
             </tbody>
           </table>
         </div>
 
+        {/* Desktop Pagination */}
+        <div className="hidden md:flex mt-4 px-4 mb-6 items-center justify-between text-sm">
+          <div className="text-gray-600">Showing {filteredByCategory.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, filteredByCategory.length)} of {filteredByCategory.length}</div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center gap-1 px-2 py-1 bg-gray-100 border text-gray-700 rounded disabled:opacity-50"><PiArrowLeftBold size={14} /></button>
+            <div className="text-gray-700 text-xs">{currentPage} / {Math.max(1, Math.ceil(filteredByCategory.length / pageSize))}</div>
+            <button onClick={() => setCurrentPage((p) => Math.min(Math.max(1, Math.ceil(filteredByCategory.length / pageSize)), p + 1))} disabled={currentPage === Math.max(1, Math.ceil(filteredByCategory.length / pageSize))} className="flex items-center gap-1 px-2 py-1 bg-gray-100 border text-gray-700 rounded disabled:opacity-50"><PiArrowRightBold size={14} /></button>
+          </div>
+        </div>
+
         {/* Mobile Card View */}
         <div className="md:hidden space-y-3">
-          {(() => {
-            const filtered = tableCategory === "All" 
-              ? history 
-              : history.filter((item) => {
-                  const product = SAMPLE.find((p) => p.id === item.id);
-                  return product?.category === tableCategory;
-                });
-            
-            const searchFiltered = query
-              ? filtered.filter((item) => item.name.toLowerCase().includes(query.toLowerCase()))
-              : filtered;
-            
-            if (searchFiltered.length === 0) {
+          {filteredByCategory.length === 0 ? (
+            <div className="p-4 text-center text-gray-500 text-sm bg-white rounded">
+              No products found.
+            </div>
+          ) : (
+            filteredByCategory.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((product) => {
+              const cartItem = getHistoryItem(product.id);
               return (
-                <div className="p-4 text-center text-gray-500 text-sm bg-white ">
-                  No products selected. Use the menu to add items.
-                </div>
-              );
-            }
-            
-            return searchFiltered.map((item) => {
-              const product = SAMPLE.find((p) => p.id === item.id);
-              if (!product) return null;
-              return (
-                <div key={item.when} className="bg-white  p-3 shadow-sm border border-gray-200">
+                <div key={product.id} className="bg-white  p-3 shadow-sm border border-gray-200">
                   <div className="flex gap-3 items-start">
                     {/* Product Image */}
                     <div className="flex-shrink-0">
-                      <div className="w-14 h-14 bg-gray-100  overflow-hidden">
+                      <div className="w-14 h-14 bg-gray-100 rounded overflow-hidden">
                         <img
-                          src={item.img || "https://via.placeholder.com/200"}
-                          alt={item.name}
+                          src={product.img || "https://via.placeholder.com/200"}
+                          alt={product.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -319,37 +292,32 @@ export default function Catalog() {
 
                     {/* Product Info - Center */}
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-black text-sm truncate">{item.name}</div>
-                      <div className="text-xs text-gray-600">{item.price} XAF</div>
-
-                      {/* Quantity Controls - Left under name/price */}
-                      <div className="mt-2 flex items-center gap-2">
-                        <button
-                          onClick={() => handleUpdateQuantity(item.when, (item.quantity || 1) - 1)}
-                          className="px-2 py-1 bg-gray-200 text-black hover:bg-gray-300  text-xs font-medium transition"
-                        >
-                          −
-                        </button>
-                        <span className="inline-flex items-center justify-center w-6 h-6 bg-gray-100  text-black font-medium text-xs">
-                          {item.quantity || 1}
-                        </span>
-                        <button
-                          onClick={() => handleUpdateQuantity(item.when, (item.quantity || 1) + 1)}
-                          className="px-2 py-1 bg-gray-200 text-black hover:bg-gray-300  text-xs font-medium transition"
-                        >
-                          +
-                        </button>
-                      </div>
+                      <div className="font-semibold text-black text-sm truncate">{product.name}</div>
+                      <div className="text-xs text-gray-600">{product.priceMin} - {product.priceMax} XAF</div>
+                      {cartItem && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <label htmlFor={`cart-qty-mobile-${product.id}`} className="text-sm text-gray-700 font-medium">Qty</label>
+                          <input
+                            id={`cart-qty-mobile-${product.id}`}
+                            type="number"
+                            min={1}
+                            value={cartItem.quantity || 1}
+                            onChange={(e) => handleUpdateQuantity(product.id, Math.max(1, parseInt(e.target.value) || 1))}
+                            className="w-14 h-5 text-center border border-gray-300 text-black font-medium px-2"
+                            aria-label={`Quantity for ${product.name}`}
+                            title="Quantity"
+                          />
+                        </div>
+                      )}
                     </div>
 
-                    {/* Right side: dropdown stacked above action buttons */}
-                    <div className="flex flex-col items-end gap-3">
+                    {/* Right side: dropdown and action button */}
+                    <div className="flex flex-col items-end gap-2">
                       <select
-                        value={item.type || ""}
-                        onChange={(e) => handleUpdateType(item.when, e.target.value)}
-                        className="border border-gray-300 px-2 py-1  text-xs text-gray-700 bg-white min-w-[80px]"
+                        value={productTypes[product.id] || product.types?.[0] || ""}
+                        onChange={(e) => setProductTypes((prev) => ({ ...prev, [product.id]: e.target.value }))}
+                        className="border border-gray-300 px-2 py-1 rounded text-xs text-gray-700 bg-white min-w-[80px]"
                       >
-                        <option value="">Type</option>
                         {product.types?.map((t) => (
                           <option key={t} value={t}>
                             {t}
@@ -357,28 +325,39 @@ export default function Catalog() {
                         ))}
                       </select>
 
-                      <div className="flex items-center gap-2">
+                      {cartItem ? (
                         <button
-                          title="View"
-                          onClick={() => { setDetailsEntry(item); setDetailsOpen(true); }}
-                          className="p-2 text-blue-500 hover:bg-blue-50  transition"
-                        >
-                          <PiEye size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item.when)}
+                          onClick={() => handleDeleteFromCart(product.id)}
                           title="Remove"
-                          className="p-2 text-red-500 hover:bg-red-50  transition"
+                          className="p-2 text-red-500 hover:bg-red-50 rounded transition"
                         >
                           <PiTrash size={16} />
                         </button>
-                      </div>
+                      ) : (
+                        <button
+                          onClick={() => handleAdd(product, productTypes[product.id])}
+                          title="Add to Cart"
+                          className="p-2 text-green-500 hover:bg-green-50 rounded transition"
+                        >
+                          <PiShoppingCart size={16} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
               );
-            });
-          })()}
+            })
+          )}
+        </div>
+
+        {/* Mobile Pagination */}
+        <div className="md:hidden flex mt-4 px-2 mb-6 flex-col sm:flex-row items-center gap-2 justify-between text-xs">
+          <div className="text-gray-600">Showing {filteredByCategory.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, filteredByCategory.length)} of {filteredByCategory.length}</div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center gap-1 px-2 py-1 bg-gray-100 border text-gray-700 rounded disabled:opacity-50"><PiArrowLeftBold size={14} /></button>
+            <div className="text-gray-700 text-xs">{currentPage} / {Math.max(1, Math.ceil(filteredByCategory.length / pageSize))}</div>
+            <button onClick={() => setCurrentPage((p) => Math.min(Math.max(1, Math.ceil(filteredByCategory.length / pageSize)), p + 1))} disabled={currentPage === Math.max(1, Math.ceil(filteredByCategory.length / pageSize))} className="flex items-center gap-1 px-2 py-1 bg-gray-100 border text-gray-700 rounded disabled:opacity-50"><PiArrowRightBold size={14} /></button>
+          </div>
         </div>
 
         <div className="mt-6">
@@ -392,21 +371,6 @@ export default function Catalog() {
           />
         </div>
       </div>
-
-      <ProductDetailsModal
-        open={detailsOpen}
-        onClose={() => { setDetailsOpen(false); setDetailsEntry(null); }}
-        product={detailsEntry ? SAMPLE.find((p) => p.id === detailsEntry.id) || null : null}
-        initialType={detailsEntry?.type}
-        initialQuantity={detailsEntry?.quantity}
-        onPay={async (productId, type, quantity) => {
-          if (detailsEntry) {
-            await handlePay(detailsEntry.when);
-          } else {
-            await handleInstantPay(productId, type, quantity);
-          }
-        }}
-      />
 
       <MenuModal
         open={menuOpen}

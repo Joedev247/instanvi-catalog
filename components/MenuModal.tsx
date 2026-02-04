@@ -148,7 +148,7 @@ export default function MenuModal({
                       <button
                         onClick={() => handleAddClick(product)}
                         aria-label={`Add ${product.name}`}
-                        className="ml-1 p-2 hover:bg-green-600 text-white -md flex items-center justify-center"
+                        className="ml-1 p-2 hover:bg-green-100 text-white -md flex items-center justify-center"
                       >
                         <PiShoppingCart size={16} className="text-green-500" />
                       </button>

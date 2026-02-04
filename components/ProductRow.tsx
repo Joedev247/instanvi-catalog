@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { PiPlus, PiMinus } from "react-icons/pi";
+import { PiShoppingCart } from "react-icons/pi";
 
 export default function ProductRow({
   product,
@@ -10,7 +10,7 @@ export default function ProductRow({
   onAdd: (product: any, selected?: string, quantity?: number) => void;
 }) {
   const [selected, setSelected] = useState(product.types?.[0] ?? "");
-  const [quantity, setQuantity] = useState(1);
+  
 
   const price = product.priceMin || 0;
 
@@ -36,45 +36,14 @@ export default function ProductRow({
           ))}
         </select>
       </td>
-      <td className="p-4 align-top">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="p-1 text-gray-600 hover:bg-gray-100  transition"
-            aria-label="Decrease quantity"
-          >
-            <PiMinus size={16} />
-          </button>
-          <input
-            type="number"
-            min="1"
-            value={quantity}
-            onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-            className="w-12 text-center border border-gray-300  text-black font-medium"
-            aria-label="Quantity"
-          />
-          <button
-            onClick={() => setQuantity((q) => q + 1)}
-            className="p-1 text-gray-600 hover:bg-gray-100  transition"
-            aria-label="Increase quantity"
-          >
-            <PiPlus size={16} />
-          </button>
-        </div>
-      </td>
       <td className="p-4 align-top text-right">
         <button
-          onClick={() => {
-            for (let i = 0; i < quantity; i++) {
-              onAdd(product, selected, 1);
-            }
-            setQuantity(1);
-          }}
-          className="inline-flex items-center gap-2 px-3 py-1.5 instanvi-btn-primary  text-sm shadow"
+          onClick={() => onAdd(product, selected, 1)}
+          className="inline-flex items-center justify-center p-2 text-green-500 hover:bg-green-50 rounded transition"
           aria-label={`Add ${product.name}`}
+          title="Add to cart"
         >
-          <PiPlus size={16} />
-          Add
+          <PiShoppingCart size={16} />
         </button>
       </td>
     </tr>
