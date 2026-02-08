@@ -9,6 +9,7 @@ export default function Summary({
   onDelete,
   onClear,
   onPay,
+  onCheckout,
 }: {
   totalProducts: number;
   totalAmount: number;
@@ -16,6 +17,7 @@ export default function Summary({
   onDelete?: (when: string) => void;
   onClear?: () => void;
   onPay?: (when: string) => Promise<void>;
+  onCheckout?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [processing, setProcessing] = useState<string | null>(null);
@@ -75,13 +77,26 @@ export default function Summary({
               </h2>
               <p className="text-sm text-gray-600 mt-1 lg:hidden">{history.length} item{history.length !== 1 ? 's' : ''} in your order</p>
             </div>
-            <button
-              onClick={() => setOpen(false)}
-              aria-label="Close checkout"
-              className="p-2 text-gray-600 hover:bg-gray-100 rounded transition"
-            >
-              <PiX size={24} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  onClear && onClear();
+                  setOpen(false);
+                }}
+                aria-label="Clear order"
+                className="p-2 text-red-600 hover:bg-red-50  transition"
+                title="Clear order"
+              >
+                <PiTrash size={24} />
+              </button>
+              <button
+                onClick={() => setOpen(false)}
+                aria-label="Close checkout"
+                className="p-2 text-gray-600 hover:bg-gray-100  transition"
+              >
+                <PiX size={24} />
+              </button>
+            </div>
           </div>
 
           {/* Main Content Area - Products + Sidebar */}
@@ -112,7 +127,7 @@ export default function Summary({
                             <img
                               src={h.img || "https://via.placeholder.com/80"}
                               alt={h.name}
-                              className="w-20 h-20 object-cover bg-gray-100 rounded"
+                              className="w-20 h-20 object-cover bg-gray-100 "
                             />
                           </div>
 
@@ -122,7 +137,7 @@ export default function Summary({
                               <div>
                                 <h3 className="font-semibold text-black text-base">{h.name}</h3>
                                 <div className="flex items-center gap-2 mt-1">
-                                  {h.type && <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">{h.type}</span>}
+                                  {h.type && <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 ">{h.type}</span>}
                                   {h.quantity && <span className="text-xs text-gray-600">Qty: {h.quantity}</span>}
                                 </div>
                                 <p className="text-xs text-gray-500 mt-2">{new Date(h.when).toLocaleString()}</p>
@@ -152,14 +167,14 @@ export default function Summary({
                                   <button
                                     onClick={() => handlePayClick(h.when)}
                                     disabled={processing !== null}
-                                    className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white px-3 py-1.5 text-xs font-semibold rounded transition"
+                                    className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white px-3 py-1.5 text-xs font-semibold  transition"
                                   >
                                     {processing === h.when ? "Processing..." : "Pay Now"}
                                   </button>
                                 )}
                                 <button
                                   onClick={() => onDelete && onDelete(h.when)}
-                                  className="p-1.5 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded transition"
+                                  className="p-1.5 text-gray-600 hover:bg-red-50 hover:text-red-600  transition"
                                   aria-label="Remove item"
                                 >
                                   <PiTrash size={16} />
@@ -201,19 +216,19 @@ export default function Summary({
                   {/* Actions */}
                   <div className="flex gap-3">
                     <button
-                      onClick={() => setOpen(false)}
-                      className="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-3 font-semibold transition "
-                    >
-                      Continue Shopping
-                    </button>
-                    <button
                       onClick={() => {
-                        onClear && onClear();
+                        onCheckout && onCheckout();
                         setOpen(false);
                       }}
-                      className="flex-1 border-2 border-red-300 text-red-600 hover:bg-red-50 px-4 py-3 font-semibold transition "
+                      className="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-3 font-semibold transition "
                     >
-                      Clear Order
+                      Checkout
+                    </button>
+                    <button
+                      onClick={() => setOpen(false)}
+                      className="flex-1 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-3 font-semibold transition "
+                    >
+                      Continue Shopping
                     </button>
                   </div>
                 </div>
@@ -239,19 +254,19 @@ export default function Summary({
               {/* Actions */}
               <div className="flex gap-2">
                 <button
-                  onClick={() => setOpen(false)}
-                  className="flex-1 border border-gray-300 text-black px-4 py-2.5  font-semibold hover:bg-gray-50 transition"
-                >
-                  Continue Shopping
-                </button>
-                <button
                   onClick={() => {
-                    onClear && onClear();
+                    onCheckout && onCheckout();
                     setOpen(false);
                   }}
-                  className="flex-1 border border-red-300 text-red-600 px-4 py-2.5  font-semibold hover:bg-red-50 transition"
+                  className="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2.5 font-semibold transition"
                 >
-                  Clear Order
+                  Checkout
+                </button>
+                <button
+                  onClick={() => setOpen(false)}
+                  className="flex-1 border border-gray-300 text-black px-4 py-2.5 font-semibold hover:bg-gray-50 transition"
+                >
+                  Continue Shopping
                 </button>
               </div>
             </div>

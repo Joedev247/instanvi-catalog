@@ -1,13 +1,19 @@
 "use client";
 import React, { useState } from "react";
-import { PiShoppingCart } from "react-icons/pi";
+import { PiPlus } from "react-icons/pi";
 
 export default function ProductRow({
   product,
   onAdd,
+  editing,
+  priceEdit,
+  onPriceChange,
 }: {
   product: any;
   onAdd: (product: any, selected?: string, quantity?: number) => void;
+  editing?: boolean;
+  priceEdit?: { priceMin: number; priceMax: number } | undefined;
+  onPriceChange?: (id: string, priceMin: number, priceMax: number) => void;
 }) {
   const [selected, setSelected] = useState(product.types?.[0] ?? "");
   
@@ -23,7 +29,14 @@ export default function ProductRow({
       </td>
       <td className="p-4 align-top">
         <div className="font-semibold text-black">{product.name}</div>
-        <div className="text-sm text-gray-700 font-medium">{price} - {product.priceMax}</div>
+        {!editing ? (
+          <div className="text-sm text-gray-700 font-medium">{price} - {product.priceMax}</div>
+        ) : (
+          <div className="flex gap-2">
+            <input type="number" value={priceEdit?.priceMin ?? price} onChange={(e) => onPriceChange && onPriceChange(product.id, Number(e.target.value || 0), priceEdit?.priceMax ?? product.priceMax)} className="border px-2 py-1 w-24" />
+            <input type="number" value={priceEdit?.priceMax ?? product.priceMax} onChange={(e) => onPriceChange && onPriceChange(product.id, priceEdit?.priceMin ?? price, Number(e.target.value || 0))} className="border px-2 py-1 w-24" />
+          </div>
+        )}
       </td>
       <td className="p-4 align-top">
         <select
@@ -39,11 +52,11 @@ export default function ProductRow({
       <td className="p-4 align-top text-right">
         <button
           onClick={() => onAdd(product, selected, 1)}
-          className="inline-flex items-center justify-center p-2 text-green-500 hover:bg-green-50 rounded transition"
+          className="inline-flex items-center justify-center p-2 text-green-500 hover:bg-green-50  transition"
           aria-label={`Add ${product.name}`}
           title="Add to cart"
         >
-          <PiShoppingCart size={16} />
+          <PiPlus size={16} />
         </button>
       </td>
     </tr>
